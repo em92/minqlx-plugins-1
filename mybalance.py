@@ -76,20 +76,6 @@ from minqlx.database import Redis
 VERSION = "v0.56.4.3"
 
 
-# This code makes sure the required superclass is loaded automatically
-try:
-    from .iouonegirl import iouonegirlPlugin
-except:
-    try:
-        abs_file_path = os.path.join(os.path.dirname(__file__), "iouonegirl.py")
-        res = requests.get("https://raw.githubusercontent.com/dsverdlo/minqlx-plugins/master/iouonegirl.py")
-        if res.status_code != requests.codes.ok: raise
-        with open(abs_file_path,"a+") as f: f.write(res.text)
-        from .iouonegirl import iouonegirlPlugin
-    except Exception as e :
-        minqlx.CHAT_CHANNEL.reply("^1iouonegirl abstract plugin download failed^7: {}".format(e))
-        raise
-
 BOUNDARIES = []
 
 # If this is True, a message will be printed on the screen of the person who should spec when teams are uneven
@@ -119,7 +105,7 @@ DEFAULT_RATING = 1500
 SUPPORTED_GAMETYPES = ("ca", "ctf", "dom", "ft", "tdm")
 
 
-class mybalance(iouonegirlPlugin):
+class mybalance(minqlx.Plugin):
     def __init__(self):
         super().__init__(self.__class__.__name__, VERSION)
 
