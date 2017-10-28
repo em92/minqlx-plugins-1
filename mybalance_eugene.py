@@ -100,8 +100,8 @@ EXCEPTIONS_FILE = "exceptions.txt"
 EXT_SUPPORTED_GAMETYPES = ("ca", "ctf", "dom", "ft", "tdm", "duel", "ffa")
 RATING_KEY = "minqlx:players:{0}:ratings:{1}" # 0 == steam_id, 1 == short gametype.
 MAX_ATTEMPTS = 3
-CACHE_EXPIRE = 60*30 # 30 minutes TTL.
-DEFAULT_RATING = 1500
+CACHE_EXPIRE = 60 # 1 minute TTL.
+DEFAULT_RATING = 300
 SUPPORTED_GAMETYPES = ("ca", "ctf", "dom", "ft", "tdm")
 
 
