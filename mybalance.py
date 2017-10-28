@@ -309,7 +309,7 @@ class mybalance(minqlx.Plugin):
                 break
             counter += 1
 
-        channel.reply("^7Successfully removed ^6{}^7 (glicko {}) from the list.".format(name, elo))
+        channel.reply("^7Successfully removed ^6{}^7 (rating {}) from the list.".format(name, elo))
 
     def cmd_nokick(self, player, msg, channel):
         def dontkick(kickthread):
@@ -447,7 +447,7 @@ class mybalance(minqlx.Plugin):
             with open (abs_file_path, "r") as file:
                 excps = []
                 n = 0
-                if player: player.tell("^6Psst: ^7Glicko exceptions:\n")
+                if player: player.tell("^6Psst: ^7rating exceptions:\n")
                 for line in file:
                     if line.startswith("#"): continue # comment lines
                     split = line.split()
@@ -651,14 +651,14 @@ class mybalance(minqlx.Plugin):
 
                         # If it's too high, but it is close enough to the limit, start kickthread
                         if eval_elo and eval_elo[0] == "high" and (eval_elo[1] - self.ELO_MAX) <= self.get_cvar("qlx_elo_close_enough",int):
-                            self.msg("^7Connecting player ({}^7)'s glicko ^6{}^7 is too high, but maybe close enough for a ^2!nokick ^7?".format(player.name, eval_elo[1]))
+                            self.msg("^7Connecting player ({}^7)'s rating ^6{}^7 is too high, but maybe close enough for a ^2!nokick ^7?".format(player.name, eval_elo[1]))
                             self.kicked[player.steam_id] = [player.name, eval_elo[1]]
                             self.help_start_kickthread(player, eval_elo[1], eval_elo[0])
 
                         # If it's too low, but close enough to the limit, start kickthread
                         elif eval_elo and eval_elo[0] == "low" and (self.ELO_MIN - eval_elo[1]) <= self.get_cvar("qlx_elo_close_enough",int):
                             self.kicked[player.steam_id] = [player.name, eval_elo[1]]
-                            self.msg("^7Connecting player ({}^7)'s glicko ^6{}^7 is too low, but maybe close enough for a ^2!nokick ^7?".format(player.name, eval_elo[1]))
+                            self.msg("^7Connecting player ({}^7)'s rating ^6{}^7 is too low, but maybe close enough for a ^2!nokick ^7?".format(player.name, eval_elo[1]))
                             self.help_start_kickthread(player, eval_elo[1], eval_elo[0])
 
                         # If it's still not allowed, block connection
@@ -1165,7 +1165,7 @@ class mybalance(minqlx.Plugin):
         last_status = 0
         while attempts < MAX_ATTEMPTS:
             attempts += 1
-            url = "http://qlstats.net/{elo}/{}".format(sid, elo=self.get_cvar('qlx_balanceApi'))
+            url = "http://{url}/{elo}/{}".format(sid, url=self.get_cvar("qlx_balanceUrl"), elo=self.get_cvar('qlx_balanceApi'))
             res = requests.get(url)
             last_status = res.status_code
             if res.status_code != requests.codes.ok:
@@ -1190,7 +1190,7 @@ class mybalance(minqlx.Plugin):
             return callback(player, gt, 0, 0)
 
 
-        self.msg("^1echo Problem fetching {} glicko: {}".format(gt, last_status))
+        self.msg("^1echo Problem fetching {} rating: {}".format(gt, last_status))
         return
 
     @minqlx.thread
@@ -1204,10 +1204,9 @@ class mybalance(minqlx.Plugin):
             sid = player
 
         rating = [None,None]
-        brating = [None, None]
 
         try:
-            url = "http://qlstats.net/elo/{}".format(sid)
+            url = "http://{url}/{elo}/{}".format(sid, url=self.get_cvar("qlx_balanceUrl"), elo=self.get_cvar('qlx_balanceApi'))
             res = requests.get(url)
             if res.status_code != requests.codes.ok: raise
 
@@ -1220,31 +1219,16 @@ class mybalance(minqlx.Plugin):
                     if gt in p: rating = [p[gt]["elo"], p[gt]["games"]]
                     break
 
-            url = "http://qlstats.net/elo_b/{}".format(sid)
-            res = requests.get(url)
-            if res.status_code != requests.codes.ok: raise
-
-            js = res.json()
-            if "players" not in js: raise
-
-            for p in js["players"]:
-                _sid = int(p["steamid"])
-                if _sid == sid: # got our player
-                    if gt in p: brating = [p[gt]["elo"], p[gt]["games"]]
-                    break
-
-            elomsg = "{} ^7qlstats.net {} ".format(player.name, gt.upper())
+            elomsg = "{} ^7{url} {} ".format(player.name, gt.upper(), url=self.get_cvar("qlx_balanceUrl"))
             if rating != [None, None]:
                 elomsg += "| rating: ^6{} ({} games)^7 ".format(rating[0], rating[1])
-            if brating != [None, None]:
-                elomsg += "| B-rating: ^6{} ({} games)^7 ".format(brating[0], brating[1])
             key = RATING_KEY.format(sid, gt)
             if key in self.db:
                 elomsg += "| local: ^6{} ".format(int(self.db[key]))
             channel.reply(elomsg)
 
         except Exception as e:
-            channel.reply("^1Problem fetching {} glicko: {}".format(gt, e))
+            channel.reply("^1Problem fetching {} rating: {}".format(gt, e))
             raise e
             return
 
@@ -1261,10 +1245,9 @@ class mybalance(minqlx.Plugin):
         key = RATING_KEY.format(sid, self.game.type_short)
         if key in self.db:
             dbelo = int(self.db[key])
-            elos.append("^7local {} glicko: ^6{}".format(gt.upper(), dbelo))
+            elos.append("^7local {} rating: ^6{}".format(gt.upper(), dbelo))
         #if elo and games:
-        b = " ^3B^7" if self.get_cvar('qlx_balanceApi') == "elo_b" else ""
-        elos.append("^7qlstats.net {}{} glicko: ^6{} ({} games)".format(gt.upper(), b, elo, games))
+        elos.append("^7{url} {} rating: ^6{} ({} games)".format(gt.upper(), elo, games, url=self.get_cvar('qlx_balanceUrl')))
 
         if elos: minqlx.CHAT_CHANNEL.reply("^6{}".format(m) + " ^7, ".join(elos) + "^7.")
 
@@ -1284,7 +1267,7 @@ class mybalance(minqlx.Plugin):
                     kickmsg = "so you'll be ^6kicked ^7shortly..."
                 else:
                     kickmsg = "but you are free to keep watching."
-                self.plugin.msg("^7Sorry, {} your glicko ({}) is too {}, {}".format(self.player.name, self.elo, self.highlow, kickmsg))
+                self.plugin.msg("^7Sorry, {} your rating ({}) is too {}, {}".format(self.player.name, self.elo, self.highlow, kickmsg))
             def try_mute(self):
                 @minqlx.next_frame
                 def execute():
@@ -1300,7 +1283,7 @@ class mybalance(minqlx.Plugin):
                 @minqlx.next_frame
                 def execute():
                     try:
-                        self.player.kick("^1GOT KICKED!^7 Glicko ({}) was too {} for this server.".format(self.elo, self.highlow))
+                        self.player.kick("^1GOT KICKED!^7 rating ({}) was too {} for this server.".format(self.elo, self.highlow))
                     except:
                         pass
                 if self.plugin.get_cvar("qlx_elo_kick") == "0": return
@@ -1389,5 +1372,5 @@ class ConnectThread(threading.Thread):
         self._player = player
         self._result = None
     def run(self):
-        url = "http://qlstats.net/{elo}/{}".format(self._player.steam_id, elo=self._plugin.get_cvar('qlx_balanceApi'))
+        url = "http://{url}/{elo}/{}".format(self._player.steam_id, url=self._plugin.get_cvar('qlx_balanceUrl'), elo=self._plugin.get_cvar('qlx_balanceApi'))
         self._result = requests.get(url)
