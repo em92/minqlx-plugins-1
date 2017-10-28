@@ -105,7 +105,7 @@ DEFAULT_RATING = 1500
 SUPPORTED_GAMETYPES = ("ca", "ctf", "dom", "ft", "tdm")
 
 
-class mybalance(minqlx.Plugin):
+class mybalance_eugene(minqlx.Plugin):
     def __init__(self):
         super().__init__(self.__class__.__name__, VERSION)
 
