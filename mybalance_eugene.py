@@ -1166,7 +1166,7 @@ class mybalance_eugene(minqlx.Plugin):
         while attempts < MAX_ATTEMPTS:
             attempts += 1
             url = "http://{url}/{elo}/{}".format(sid, url=self.get_cvar("qlx_balanceUrl"), elo=self.get_cvar('qlx_balanceApi'))
-            res = requests.get(url, headers={"X-QuakeLive-Map": self.game.map, "X-QuakeLive-Gametype": self.game.type_short}))
+            res = requests.get(url, headers={"X-QuakeLive-Map": self.game.map, "X-QuakeLive-Gametype": self.game.type_short})
             last_status = res.status_code
             if res.status_code != requests.codes.ok:
                 continue
