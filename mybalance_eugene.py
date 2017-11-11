@@ -107,8 +107,6 @@ SUPPORTED_GAMETYPES = ("ca", "ctf", "dom", "ft", "tdm")
 
 class mybalance_eugene(minqlx.Plugin):
     def __init__(self):
-        super().__init__(self.__class__.__name__, VERSION)
-
         # set cvars once. EDIT THESE IN SERVER.CFG!
         self.set_cvar_once("qlx_elo_limit_min", "0")
         self.set_cvar_once("qlx_elo_limit_max", "1600")
