@@ -1207,7 +1207,7 @@ class mybalance_eugene(minqlx.Plugin):
 
         try:
             url = "http://{url}/{elo}/{}".format(sid, url=self.get_cvar("qlx_balanceUrl"), elo=self.get_cvar('qlx_balanceApi'))
-            res = requests.get(url, headers={"X-QuakeLive-Map": self.game.map, "X-QuakeLive-Gametype": self.game.type_short}))
+            res = requests.get(url, headers={"X-QuakeLive-Map": self.game.map, "X-QuakeLive-Gametype": self.game.type_short})
             if res.status_code != requests.codes.ok: raise
 
             js = res.json()
@@ -1373,4 +1373,4 @@ class ConnectThread(threading.Thread):
         self._result = None
     def run(self):
         url = "http://{url}/{elo}/{}".format(self._player.steam_id, url=self._plugin.get_cvar('qlx_balanceUrl'), elo=self._plugin.get_cvar('qlx_balanceApi'))
-        self._result = requests.get(url, headers={"X-QuakeLive-Map": self._plugin.game.map, "X-QuakeLive-Gametype": self._plugin.game.type_short}))
+        self._result = requests.get(url, headers={"X-QuakeLive-Map": self._plugin.game.map, "X-QuakeLive-Gametype": self._plugin.game.type_short})
